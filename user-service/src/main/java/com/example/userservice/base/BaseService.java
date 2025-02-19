@@ -1,16 +1,11 @@
-package com.example.warehouseservice.base;
-
-import com.example.warehouseservice.constants.ErrorMessage;
-import com.example.warehouseservice.constants.SuccessMessage;
-import com.example.warehouseservice.exception.MessageException;
+package com.example.userservice.base;
+import com.example.userservice.constants.ErrorMessage;
+import com.example.userservice.constants.SuccessMessage;
+import com.example.userservice.exception.MessageException;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
 
 public class BaseService <T, ID> {
 

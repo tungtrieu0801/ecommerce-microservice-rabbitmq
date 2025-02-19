@@ -5,7 +5,6 @@ import com.example.warehouseservice.base.BaseService;
 import com.example.warehouseservice.entity.Brand;
 import com.example.warehouseservice.service.BrandService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,4 +21,6 @@ public class BrandController extends BaseController<Brand, UUID> {
         this.brandService = brandService;
         super.setService((BaseService<Brand, UUID>) brandService);
     }
+
+
 }

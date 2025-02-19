@@ -28,53 +28,41 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final CustomUserDetailsService userDetailsService;
 
-    @Value("${permission.service}")
-    private String permissionService;
-
-    @Value("${keycloak.realm.access}")
-    private String keyCloakRealmAccess;
-
-    @Value("${keycloak.resource.access}")
-    private String keycloakResourceAccess;
-
-    @Value("${keycloak.realm.access.role}")
-    private String keycloakRealmAccessRole;
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String authorizationHeader = request.getHeader("Authorization");
 
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            try {
-                String token = authorizationHeader.replace("Bearer ", "");
-
-                String[] tokenParts = token.split("\\.");
-                if (tokenParts.length == 3) {
-
-                    String payload = new String(Base64.getDecoder().decode(tokenParts[1]));
-
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    Map<String, Object> claims = objectMapper.readValue(payload, Map.class);
-
-                    String username = (String) claims.get("preferred_username");
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                    UsernamePasswordAuthenticationToken authenticationToken =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-
-                } else {
-                    logger.warn("Invalid token format");
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    return;
-                }
-            } catch (Exception e) {
-                logger.error("Token validation error: {}", e.getMessage(), e);
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                return;
-            }
-        }
+//        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+//            try {
+//                String token = authorizationHeader.replace("Bearer ", "");
+//
+//                String[] tokenParts = token.split("\\.");
+//                if (tokenParts.length == 3) {
+//
+//                    String payload = new String(Base64.getDecoder().decode(tokenParts[1]));
+//
+//                    ObjectMapper objectMapper = new ObjectMapper();
+//                    Map<String, Object> claims = objectMapper.readValue(payload, Map.class);
+//
+////                    String username = (String) claims.get("preferred_username");
+////                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+////                    UsernamePasswordAuthenticationToken authenticationToken =
+////                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+////
+////                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+//
+//                } else {
+//                    logger.warn("Invalid token format");
+//                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+//                    return;
+//                }
+//            } catch (Exception e) {
+//                logger.error("Token validation error: {}", e.getMessage(), e);
+//                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+//                return;
+//            }
+//        }
         filterChain.doFilter(request, response);
     }
 }

@@ -1,8 +1,9 @@
-package com.example.warehouseservice.security;
+package com.example.userservice.security;
 
-import com.example.warehouseservice.exception.GlobalExceptionHandler;
-import com.example.warehouseservice.security.jwt.JwtAuthFilter;
-import com.example.warehouseservice.security.jwt.JwtAuthenticationEntryPoint;
+
+import com.example.userservice.exception.GlobalExceptionHandler;
+import com.example.userservice.security.jwt.JwtAuthFilter;
+import com.example.userservice.security.jwt.JwtAuthenticationEntryPoint;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
@@ -38,7 +39,6 @@ public class SecurityConfig implements WebMvcConfigurer {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final GlobalExceptionHandler globalExceptionHandler;
     private final JwtAuthFilter jwtAuthFilter;
-
     public SecurityConfig(JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, GlobalExceptionHandler globalExceptionHandler, JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.globalExceptionHandler = globalExceptionHandler;
@@ -50,7 +50,7 @@ public class SecurityConfig implements WebMvcConfigurer {
         return (request, response, accessDeniedException) -> {
             ResponseEntity<Object> responseEntity = globalExceptionHandler
                     .handleAccessDeniedException(accessDeniedException, request);
-            response.setStatus(responseEntity.getStatusCode().value());
+            response.setStatus(responseEntity.getStatusCodeValue());
             response.setContentType("application/json");
             response.getOutputStream().println(new ObjectMapper().writeValueAsString(responseEntity.getBody()));
         };
@@ -65,23 +65,27 @@ public class SecurityConfig implements WebMvcConfigurer {
                             .accessDeniedHandler(accessDeniedHandler());
                 })
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll()
                 )
-//                .addFilterBefore(jwtAuthFilter, AbstractPreAuthenticatedProcessingFilter.class)
+                .addFilterBefore(jwtAuthFilter, AbstractPreAuthenticatedProcessingFilter.class)
                 .sessionManagement(httpSecuritySessionManagementConfigurer ->
                         httpSecuritySessionManagementConfigurer
                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                 .headers(headers ->
                         headers.xssProtection(xss ->
                                         xss.headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
                                 .contentSecurityPolicy(cps ->
-                                        cps.policyDirectives("script-src 'self'")))
+                                        cps.policyDirectives("script-src 'self'"))
+                )
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json");
-                        }));
+                        })
+                );
 
         return http.build();
     }
@@ -103,8 +107,8 @@ public class SecurityConfig implements WebMvcConfigurer {
         return source;
     }
 
-//    @Bean
-//    public PasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder();
-//    }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }

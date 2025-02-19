@@ -1,4 +1,4 @@
-package com.example.warehouseservice.base;
+package com.example.userservice.base;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
