@@ -27,5 +27,4 @@ public class Config {
         rabbitTemplate.setMessageConverter(jackson2JsonMessageConverter());
         return rabbitTemplate;
     }
-
 }
