@@ -1,4 +1,4 @@
-package com.example.warehouseservice.consts;
+package com.example.warehouseservice.constants;
 
 public class VariableConst {
 

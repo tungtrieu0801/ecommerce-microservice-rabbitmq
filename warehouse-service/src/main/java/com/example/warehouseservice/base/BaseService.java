@@ -19,7 +19,8 @@ public class BaseService <T, ID> {
     public ResponseEntity<?> getDetail(ID id) {
         try {
             T entity = repository.findById(id).orElseThrow(() -> new MessageException(ErrorMessage.ERROR, HttpStatus.NOT_FOUND));
-            return ResponseEntity.status(HttpStatus.OK).body(entity);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(BaseResponse.builder().data(entity).message(SuccessMessage.SUCCESS).build());
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(BaseResponse.builder().message(ErrorMessage.NOT_FOUND).build());
@@ -42,6 +43,43 @@ public class BaseService <T, ID> {
             basePagResponse.setMessage(SuccessMessage.SUCCESS);
 
             return ResponseEntity.status(HttpStatus.OK).body(basePagResponse);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(BaseResponse.builder().message(ErrorMessage.ERROR).build());
+        }
+    }
+
+    public ResponseEntity<?> add(T entity) {
+        try {
+            entity = repository.save(entity);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(BaseResponse.builder().data(entity).message(SuccessMessage.SUCCESS).build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(BaseResponse.builder().message(ErrorMessage.ERROR).build());
+        }
+    }
+
+    public ResponseEntity<?> update(T entity, ID id) {
+        try {
+            repository.findById(id).orElseThrow(()
+                    -> new MessageException(ErrorMessage.ERROR, HttpStatus.NOT_FOUND));
+            T newEntity = repository.save(entity);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(BaseResponse.builder().data(newEntity).message(SuccessMessage.SUCCESS).build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(BaseResponse.builder().message(ErrorMessage.ERROR).build());
+        }
+    }
+
+    public ResponseEntity<?> delete(ID id) {
+        try {
+            repository.findById(id).orElseThrow(()
+                    -> new MessageException(ErrorMessage.ERROR, HttpStatus.NOT_FOUND));
+            repository.deleteById(id);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(BaseResponse.builder().message(SuccessMessage.SUCCESS).build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(BaseResponse.builder().message(ErrorMessage.ERROR).build());
