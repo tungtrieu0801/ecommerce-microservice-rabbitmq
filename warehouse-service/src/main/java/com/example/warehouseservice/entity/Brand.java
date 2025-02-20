@@ -28,8 +28,9 @@ public class Brand {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "avatar", columnDefinition = "TEXT")
-    private String avatar;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "avatar", referencedColumnName = "id", unique = true)
+    private Image avatar;
 
     @JsonIgnore
     @OneToMany(mappedBy = "brand", cascade = CascadeType.ALL, orphanRemoval = true)

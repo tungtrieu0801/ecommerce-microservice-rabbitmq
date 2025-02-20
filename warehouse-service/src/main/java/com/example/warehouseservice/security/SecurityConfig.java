@@ -4,6 +4,7 @@ import com.example.warehouseservice.exception.GlobalExceptionHandler;
 import com.example.warehouseservice.security.jwt.JwtAuthFilter;
 import com.example.warehouseservice.security.jwt.JwtAuthenticationEntryPoint;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -101,6 +102,11 @@ public class SecurityConfig implements WebMvcConfigurer {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public MultipartConfigElement multipartConfigElement() {
+        return new MultipartConfigElement("");
     }
 
 //    @Bean

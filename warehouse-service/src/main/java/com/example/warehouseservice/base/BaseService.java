@@ -3,14 +3,12 @@ package com.example.warehouseservice.base;
 import com.example.warehouseservice.constants.ErrorMessage;
 import com.example.warehouseservice.constants.SuccessMessage;
 import com.example.warehouseservice.exception.MessageException;
+import com.fasterxml.jackson.databind.util.BeanUtil;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
 
 public class BaseService <T, ID> {
 
@@ -66,14 +64,15 @@ public class BaseService <T, ID> {
 
     public ResponseEntity<?> update(T entity, ID id) {
         try {
-            repository.findById(id).orElseThrow(()
+            T existingEntity = repository.findById(id).orElseThrow(()
                     -> new MessageException(ErrorMessage.ERROR, HttpStatus.NOT_FOUND));
-            T newEntity = repository.save(entity);
+            BeanUtils.copyProperties(entity, existingEntity, "id","products");
+            T saveEntity = repository.save(existingEntity);
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(BaseResponse.builder().data(newEntity).message(SuccessMessage.SUCCESS).build());
+                    .body(BaseResponse.builder().data(saveEntity).message(SuccessMessage.SUCCESS).build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(BaseResponse.builder().message(ErrorMessage.ERROR).build());
+                    .body(BaseResponse.builder().message(e.getMessage()).build());
         }
     }
 
