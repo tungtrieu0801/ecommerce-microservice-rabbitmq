@@ -8,8 +8,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "image")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -29,7 +28,8 @@ public class Image {
     @Column(name = "type")
     private String type;
 
-    @OneToOne(mappedBy = "avatar", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Brand brand;
+    @Column(name = "save_name")
+    private String saveName;
+
 }
 

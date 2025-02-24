@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/brand")
+@RequestMapping("/api/brand")
 public class BrandController extends BaseController<Brand, UUID> {
 
     private final BrandService brandService;
@@ -27,15 +27,16 @@ public class BrandController extends BaseController<Brand, UUID> {
         super.setService((BaseService<Brand, UUID>) brandService);
     }
 
-    @PostMapping("/brand/a")
+    @PostMapping(value = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> addBrand(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("brand") String brandRequest) throws JsonProcessingException {
+            @RequestPart("file") MultipartFile file,
+            @RequestPart("brand") String brandRequest) throws JsonProcessingException {
 
         ObjectMapper objectMapper = new ObjectMapper();
         BrandRequest brandRequest1 = objectMapper.readValue(brandRequest, BrandRequest.class);
 
         return ResponseEntity.ok(brandService.addBrandWithAvatar(brandRequest1, file));
     }
+
 
 }

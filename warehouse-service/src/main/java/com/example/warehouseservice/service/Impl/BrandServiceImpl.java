@@ -1,5 +1,6 @@
 package com.example.warehouseservice.service.Impl;
 
+import com.example.warehouseservice.FileUtil;
 import com.example.warehouseservice.base.BaseService;
 import com.example.warehouseservice.entity.Brand;
 import com.example.warehouseservice.entity.Image;
@@ -8,6 +9,8 @@ import com.example.warehouseservice.repository.BrandRepository;
 import com.example.warehouseservice.repository.ImageRepository;
 import com.example.warehouseservice.service.BrandService;
 
+import com.example.warehouseservice.utils.Base64Util;
+import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.modelmapper.ModelMapper;
@@ -39,65 +42,56 @@ public class BrandServiceImpl extends BaseService<Brand, UUID> implements BrandS
     @Override
     public Brand addBrandWithAvatar(BrandRequest brandRequest, MultipartFile file) {
         try {
-            String uploadDir = getUploadPath();
+            String uploadDir = FileUtil.getUploadPath();
             String fileName = StringUtils.cleanPath(file.getOriginalFilename());
             String middleDir = DateFormatUtils.format(new Date(), "/yyyy/MM/");
-            String uniqueFileName = UUID.randomUUID() + "." + FilenameUtils.getExtension(fileName);
-            String destPath = uploadDir + middleDir;
-            File destDir = new File(destPath);
+            String fileExt = FilenameUtils.getExtension(fileName);
 
-            if (!destDir.exists() && !destDir.mkdirs()) {
-                throw new IOException("Failed to create directories: " + destPath);
+            String encodedFileName = Base64Util.encodeString(fileName);
+            String originalFilePath = uploadDir + middleDir + encodedFileName + "." + fileExt;
+            String thumbnailFilePath = uploadDir + middleDir + encodedFileName + "_thumbnail." + fileExt;
+
+            File originalFile = new File(originalFilePath);
+            File thumbnailFile = new File(thumbnailFilePath);
+
+            if (!originalFile.getParentFile().exists()) {
+                originalFile.getParentFile().mkdirs();
             }
 
-            File destFile = new File(destDir, uniqueFileName);
-//            file.transferTo(destFile);
-            appendFile(file.getInputStream(), destFile);
-            long size = destFile.length();
+            file.transferTo(originalFile);
+            long originalSize = originalFile.length();
 
-            Image fileDo = imageRepository.save(
+            Thumbnails.of(originalFile)
+                    .size(300, 300)
+                    .outputQuality(1.0)
+                    .toFile(thumbnailFile);
+            long thumbnailSize = thumbnailFile.length();
+
+            Image originalImage = imageRepository.save(
                     Image.builder()
                             .name(fileName)
-                            .type(FilenameUtils.getExtension(fileName))
-                            .size(String.valueOf(size))
+                            .type(fileExt)
+                            .size(String.valueOf(originalSize))
+                            .saveName(middleDir + encodedFileName + "." + fileExt)
+                            .build()
+            );
+
+            Image thumbnailImage = imageRepository.save(
+                    Image.builder()
+                            .name("Thumbnail of " + fileName)
+                            .type(fileExt)
+                            .size(String.valueOf(thumbnailSize))
+                            .saveName(middleDir + encodedFileName + "_thumbnail." + fileExt)
                             .build()
             );
 
             Brand brand = modelMapper.map(brandRequest, Brand.class);
+            brand.setAvatar(String.valueOf(originalImage.getId()));
+            brand.setThumbnail(String.valueOf(thumbnailImage.getId()));
+
             return brandRepository.save(brand);
         } catch (IOException e) {
             throw new RuntimeException("Failed to upload brand avatar", e);
         }
     }
-
-    // Dùng cho ghi nối tiếp.
-    private void appendFile(InputStream inputStream, File destFile) {
-
-        boolean append = destFile.exists();
-
-        try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(destFile, append))) {
-            inputStream = new BufferedInputStream(inputStream);
-
-            int len;
-            byte[] buffer = new byte[8192];
-            while ((len = inputStream.read(buffer)) >0) {
-                outputStream.write(buffer, 0, len);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static String getUploadPath() {
-        String webRoot = System.getProperty("webRoot");
-
-        if (StringUtils.isEmpty(webRoot)) {
-            webRoot = "C:\\Users\\nguye\\project";
-        }
-        File file = new File(webRoot);
-        String uploadDir = file.getParent() != null ? file.getParent() + File.separator + "upload" : webRoot + File.separator + "upload";
-        return uploadDir;
-    }
-
-
 }
